@@ -236,6 +236,22 @@ calc_scale_info_4 <- function(auto_scale, n_sets, max_scale_diff = 5) {
 
 min_overlap_for_text <- 0.2
 
+cycling_paste <- function(elements, base_seps = c(", ", ",\n")) {
+    if (length(elements) < length(base_seps)) {
+      base_seps <- base_seps[seq_along(elements)]
+    }
+    seps <- unlist(
+        lapply(
+            seq_along(elements), function(i) base_seps[(i - 1) %% length(base_seps) + 1])
+        )
+    seps <- seps[seq_along(elements)]
+    res <- paste(elements, seps, collapse = "", sep = "")
+    for (s in base_seps) {
+      res <- sub(sprintf("(.*)%s$", s), "\\1", res)
+    }
+    return(res)
+}
+
 gen_circle_2 <- function(scale_info) {
   x_dist <- (scale_info['a_radius'] + scale_info['b_radius'] - scale_info['overlap_size'] * 2) / 2
   rbind(gen_circle(1L, -x_dist, 0, scale_info['a_radius']),
@@ -410,7 +426,8 @@ prepare_venn_data <- function(data, columns = NULL,
           df_element$n[[i]] <- sum(as_tibble(data)[,count_column][idx,])
         }
         if (!identical(show_elements, FALSE)) {
-          df_element$text[[i]] <- paste(unlist(as_tibble(data)[idx,show_elements]), collapse = label_sep)
+          df_element$text[[i]] <- cycling_paste(unlist(as_tibble(data)[idx,show_elements]), label_sep)
+
         }
       }
       scale_info <- calc_scale_info_2(auto_scale, df_element$n)
@@ -433,7 +450,7 @@ prepare_venn_data <- function(data, columns = NULL,
           df_element$n[[i]] <- sum(as_tibble(data)[,count_column][idx,])
         }
         if (!identical(show_elements, FALSE)) {
-          df_element$text[[i]] <- paste(unlist(as_tibble(data)[idx,show_elements]), collapse = label_sep)
+          df_element$text[[i]] <- cycling_paste(unlist(as_tibble(data)[idx,show_elements]), label_sep)
         }
       }
       scale_info <- calc_scale_info_3(auto_scale, df_element$n)
@@ -458,7 +475,7 @@ prepare_venn_data <- function(data, columns = NULL,
           df_element$n[[i]] <- sum(as_tibble(data)[,count_column][idx,])
         }
         if (!identical(show_elements, FALSE)) {
-          df_element$text[[i]] <- paste(unlist(as_tibble(data)[idx,show_elements]), collapse = label_sep)
+          df_element$text[[i]] <- cycling_paste(unlist(as_tibble(data)[idx,show_elements]), label_sep)
         }
       }
       scale_info <- calc_scale_info_4(auto_scale, df_element$n)
@@ -482,7 +499,7 @@ prepare_venn_data <- function(data, columns = NULL,
         idx <- ((!xor(df_element$A[[i]], a2 %in% data[[columns[[1]]]])) &
                   (!xor(df_element$B[[i]], a2 %in% data[[columns[[2]]]])))
         df_element$n[[i]] <- sum(idx)
-        df_element$text[[i]] <- paste(a2[idx], collapse = label_sep)
+        df_element$text[[i]] <- cycling_paste(a2[idx], label_sep)
       }
       scale_info <- calc_scale_info_2(auto_scale, df_element$n)
       df_shape <- gen_circle_2(scale_info)
@@ -496,7 +513,7 @@ prepare_venn_data <- function(data, columns = NULL,
                   (!xor(df_element$B[[i]], a2 %in% data[[columns[[2]]]])) &
                   (!xor(df_element$C[[i]], a2 %in% data[[columns[[3]]]])))
         df_element$n[[i]] <- sum(idx)
-        df_element$text[[i]] <- paste(a2[idx], collapse = label_sep)
+        df_element$text[[i]] <- cycling_paste(a2[idx], label_sep)
       }
       scale_info <- calc_scale_info_3(auto_scale, df_element$n)
       df_shape <- gen_circle_3()
@@ -511,7 +528,7 @@ prepare_venn_data <- function(data, columns = NULL,
                   (!xor(df_element$C[[i]], a2 %in% data[[columns[[3]]]])) &
                   (!xor(df_element$D[[i]], a2 %in% data[[columns[[4]]]])))
         df_element$n[[i]] <- sum(idx)
-        df_element$text[[i]] <- paste(a2[idx], collapse = label_sep)
+        df_element$text[[i]] <-  cycling_paste(a2[idx], label_sep)
       }
       scale_info <- calc_scale_info_4(auto_scale, df_element$n)
       df_shape <- gen_circle_4()
